@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Http\Middleware\TrustHosts;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,12 +33,12 @@ Route::get('/', function () {
 Auth::routes();
 
 /*------------------------
-    EMAIL VERIFICATION
+    PASSWORD RESET
 ------------------------*/
 // Modulo di richiesta di collegamento per la reimpostazione della password
 Route::get('/forgot-password', function () {
     return view('auth.passwords.email');
-})->middleware('guest')->name('password.request');
+})->middleware([TrustHosts::class, 'guest'])->name('password.request');
 
 // Gestione invio modulo
 Route::post('/forgot-password', function (Request $request) {
@@ -50,12 +51,12 @@ Route::post('/forgot-password', function (Request $request) {
     return $status === Password::RESET_LINK_SENT
                 ? back()->with(['status' => __($status)])
                 : back()->withErrors(['email' => __($status)]);
-})->middleware('guest')->name('password.email');
+})->middleware([TrustHosts::class, 'guest'])->name('password.email');
 
 // Modulo per la reimpostazione della password
 Route::get('/reset-password/{token}', function (string $token) {
     return view('auth.passwords.reset', ['token' => $token]);
-})->middleware('guest')->name('password.reset');
+})->middleware([TrustHosts::class, 'guest'])->name('password.reset');
 
 // Gestione invio del modulo reset password
 Route::post('/reset-password', function (Request $request) {
@@ -81,7 +82,7 @@ Route::post('/reset-password', function (Request $request) {
     return $status === Password::PASSWORD_RESET
                 ? redirect()->route('login')->with('status', __($status))
                 : back()->withErrors(['email' => [__($status)]]);
-})->middleware('guest')->name('password.update');
+})->middleware([TrustHosts::class, 'guest'])->name('password.update');
 
 /*------------------------
     BACKOFFICE ROUTES
